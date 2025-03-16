@@ -12,14 +12,11 @@ import java.io.PrintWriter;
 
 public class Solution 
 {
-	private static record Pair<U, V>(U first, V second) {}
-	private static record Trio<U, V, W>(U first, V second, W third) {}
-
 	private static final String IN_FILE_PATH = "./in.txt";
 	private static final String OP_FILE_PATH = "./op.txt";
 
-	private static FastReader fr;
-	private static PrintWriter pw ;
+	private static final FastReader fr;
+	private static final PrintWriter pw ;
 
 	static 
 	{
@@ -33,82 +30,6 @@ public class Solution
 			throw new ExceptionInInitializerError(e);
 		}
 	}
-
-    public static final class FastReader 
-	{
-        private StringTokenizer s;
-        private final BufferedReader b;
-
-		public FastReader() throws IOException
-		{
-			InputStreamReader isr = new InputStreamReader(System.in, "UTF-8");
-			this.b = new BufferedReader(isr);
-
-		}
-
-        public FastReader(final String filename) throws IOException 
-		{
-			FileReader fr = new FileReader(filename);
-            this.b = new BufferedReader(fr);
-        }
-
-        private String next() 
-		{
-            while (s == null || !s.hasMoreElements()) 
-			{
-                try 
-				{
-                    s = new StringTokenizer(b.readLine());
-                } 
-				catch (IOException ioe) 
-				{
-					System.out.println("Trouble reading from the file: " + ioe.getMessage());
-					// ioe.printStackTrace();
-                }
-            }
-
-            return s.nextToken();
-        }
-
-		public int nextInt()
-		{
-			return Integer.parseInt(next());
-		}
-
-		public long nextLong()
-		{
-			return Long.parseLong(next());
-		}
-
-		public double nextDouble()
-		{
-			return Double.parseDouble(next());
-		}
-
-		public String nextLine()
-		{
-			String str = "";
-
-			try
-			{
-				if(s.hasMoreTokens())
-				{
-					str = s.nextToken("\n"); 
-				}
-				else
-				{
-					str = b.readLine();
-				}
-			}
-			catch (IOException ioe)
-			{
-				System.out.println("Trouble reading from the file: " + ioe.getMessage());
-				// ioe.printStackTrace();
-			}
-
-			return str;
-		}
-    }
 
     public static boolean canPartition(int[] arr, int n) 
 	{
