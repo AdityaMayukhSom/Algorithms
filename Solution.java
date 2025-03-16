@@ -4,36 +4,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record Pair<U, V>(U first, V second) {}
-public record Trio<U, V, W>(U first, V second, W third) {}
+record Pair<U, V>(U first, V second) {}
+record Trio<U, V, W>(U first, V second, W third) {}
 
 public class Solution {
     public int maxScore(List<List<Integer>> grid) {
         int n = grid.size();
         int m = grid.get(0).size();
 
-        List<Pair> valuesWithRow = new ArrayList<>();
+        var valuesWithRow = new ArrayList<Pair<Integer, Integer>>();
 
         for (int r = 0; r < n; r++) {
             for (int c = 0; c < m; c++) {
-                valuesWithRow.add(new Pair(grid.get(r).get(c), r));
+                valuesWithRow.add(new Pair<>(grid.get(r).get(c), r));
             }
         }
 
         // sort by value in descending order, higher values will be in front
-        Collections.sort(valuesWithRow, (a, b) -> b.first - a.first);
+        Collections.sort(valuesWithRow, (a, b) -> b.first() - a.first());
 
         // HashMap to store the maximum sum for each mask
-        Map<Integer, Integer> dp = new HashMap<>(); // mask -> maximum_sum
+        var dp = new HashMap<Integer, Integer>(); // mask -> maximum_sum
         dp.put(0, 0); // Base case: mask 0 means no rows selected, score is 0
 
         // Iterate over each value-row pair
-        for (Pair pair : valuesWithRow) {
-            int val = pair.first;
-            int row = pair.second;
+        for (var pair : valuesWithRow) {
+            int val = pair.first();
+            int row = pair.second();
 
-            Map<Integer, Integer> newDp = new HashMap<>(dp);
-            for (Map.Entry<Integer, Integer> entry : dp.entrySet()) {
+            var newDp = new HashMap<Integer, Integer>(dp);
+            for (var entry : dp.entrySet()) {
                 int mask = entry.getKey();
                 int currentSum = entry.getValue();
                 int rowMask = 1 << row;
