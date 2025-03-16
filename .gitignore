@@ -1,1 +1,4 @@
 **/*.class
+**/*.exe
+in.txt
+op.txt

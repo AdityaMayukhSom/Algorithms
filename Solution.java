@@ -1,121 +1,189 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-record Pair<U, V>(U first, V second) {}
-record Trio<U, V, W>(U first, V second, W third) {}
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
+import java.util.stream.*;
+import java.io.InputStream;
+import java.io.PrintWriter;
 
-public class Solution {
-    public int maxScore(List<List<Integer>> grid) {
-        int n = grid.size();
-        int m = grid.get(0).size();
+public class Solution 
+{
+	private static record Pair<U, V>(U first, V second) {}
+	private static record Trio<U, V, W>(U first, V second, W third) {}
 
-        var valuesWithRow = new ArrayList<Pair<Integer, Integer>>();
+	private static final String IN_FILE_PATH = "./in.txt";
+	private static final String OP_FILE_PATH = "./op.txt";
 
-        for (int r = 0; r < n; r++) {
-            for (int c = 0; c < m; c++) {
-                valuesWithRow.add(new Pair<>(grid.get(r).get(c), r));
-            }
+	private static FastReader fr;
+	private static PrintWriter pw ;
+
+	static 
+	{
+		try
+		{
+			fr = new FastReader(IN_FILE_PATH); 
+			pw = new PrintWriter(OP_FILE_PATH);
+		}
+		catch (Exception e)
+		{
+			throw new ExceptionInInitializerError(e);
+		}
+	}
+
+    public static final class FastReader 
+	{
+        private StringTokenizer s;
+        private final BufferedReader b;
+
+		public FastReader() throws IOException
+		{
+			InputStreamReader isr = new InputStreamReader(System.in, "UTF-8");
+			this.b = new BufferedReader(isr);
+
+		}
+
+        public FastReader(final String filename) throws IOException 
+		{
+			FileReader fr = new FileReader(filename);
+            this.b = new BufferedReader(fr);
         }
 
-        // sort by value in descending order, higher values will be in front
-        Collections.sort(valuesWithRow, (a, b) -> b.first() - a.first());
-
-        // HashMap to store the maximum sum for each mask
-        var dp = new HashMap<Integer, Integer>(); // mask -> maximum_sum
-        dp.put(0, 0); // Base case: mask 0 means no rows selected, score is 0
-
-        // Iterate over each value-row pair
-        for (var pair : valuesWithRow) {
-            int val = pair.first();
-            int row = pair.second();
-
-            var newDp = new HashMap<Integer, Integer>(dp);
-            for (var entry : dp.entrySet()) {
-                int mask = entry.getKey();
-                int currentSum = entry.getValue();
-                int rowMask = 1 << row;
-                if ((mask & rowMask) == 0) {
-                    int newMask = mask | rowMask;
-                    newDp.put(newMask, Math.max(newDp.getOrDefault(newMask, 0), currentSum + val));
+        private String next() 
+		{
+            while (s == null || !s.hasMoreElements()) 
+			{
+                try 
+				{
+                    s = new StringTokenizer(b.readLine());
+                } 
+				catch (IOException ioe) 
+				{
+					System.out.println("Trouble reading from the file: " + ioe.getMessage());
+					// ioe.printStackTrace();
                 }
             }
 
-            dp = newDp;
+            return s.nextToken();
         }
 
-        return Collections.max(dp.values());
+		public int nextInt()
+		{
+			return Integer.parseInt(next());
+		}
+
+		public long nextLong()
+		{
+			return Long.parseLong(next());
+		}
+
+		public double nextDouble()
+		{
+			return Double.parseDouble(next());
+		}
+
+		public String nextLine()
+		{
+			String str = "";
+
+			try
+			{
+				if(s.hasMoreTokens())
+				{
+					str = s.nextToken("\n"); 
+				}
+				else
+				{
+					str = b.readLine();
+				}
+			}
+			catch (IOException ioe)
+			{
+				System.out.println("Trouble reading from the file: " + ioe.getMessage());
+				// ioe.printStackTrace();
+			}
+
+			return str;
+		}
     }
 
-    public int solve(int col, List<List<Integer>> grid, int[] set) {
-        if (col == 0) {
-            int maxPossible = 0;
+    public static boolean canPartition(int[] arr, int n) 
+	{
+        int sum = IntStream.of(arr).sum();
 
-            for (int v : grid.get(0)) {
-                if (set[v] == 0) {
-                    maxPossible = Math.max(maxPossible, v);
+        if ((sum & 1) == 1) 
+		{
+            return false;
+        }
+
+        int t = sum / 2;
+
+        int[] prev = new int[t + 1];
+        int[] curr = new int[t + 1];
+        int[] temp;
+
+        for (int i = 0; i <= t; ++i) 
+		{
+            prev[i] = ((i < n) && (arr[i] == i)) ? 1 : 0;
+        }
+
+        prev[0] = 1;
+        curr[0] = 1;
+
+        for (int i = 1; i < n; ++i) 
+		{
+            for (int j = 1; j <= t; ++j) 
+			{
+                int tk = 0;
+
+                if (j >= arr[i]) 
+				{
+                    tk = prev[j - arr[i]];
                 }
+
+                int nt = prev[j];
+                curr[j] = (tk | nt);
             }
 
-            return maxPossible;
+            temp = prev;
+            prev = curr;
+            curr = temp;
         }
 
-        int ans, maxAns = 0;
-
-        for (int v : grid.get(col)) {
-            if (set[v] == 0) {
-                set[v] = 1;
-                ans = solve(col - 1, grid, set);
-                maxAns = Math.max(v + ans, maxAns);
-                set[v] = 0;
-            }
-        }
-
-        // In case in one middle column, every value is taken
-        // we still want to consider going to the next column
-        // without taking any value at all.
-        ans = solve(col - 1, grid, set);
-        maxAns = Math.max(ans, maxAns);
-
-        return maxAns;
+        return (prev[t] == 1);
     }
 
-    public int maxScoreBacktrack(List<List<Integer>> grid) {
-        int n = grid.size();
-        int[] set = new int[101];
-        return solve(n - 1, grid, set);
-    }
+	public static void main(String[] args)
+	{
+		try
+		{
+			int t = fr.nextInt();
 
-    public int numTeams(int[] rating) {
-        int res = 0;
+			while(t-- > 0)
+			{
+				int n = fr.nextInt();
+				int[] arr = new int[n];
 
-        for (int i = 0; i < rating.length; ++i) {
-            int leftSmaller = 0;
-            int leftBigger = 0;
-            int rightSmaller = 0;
-            int rightBigger = 0;
+				for(int i = 0; i < n; ++i)
+				{
+					arr[i] = fr.nextInt();
+				}
 
-            for (int j = i - 1; j >= 0; --j) {
-                if (rating[j] > rating[i]) {
-                    leftBigger++;
-                } else if (rating[j] < rating[i]) {
-                    leftSmaller++;
-                }
-            }
-
-            for (int k = i + 1; k < rating.length; k++) {
-                if (rating[k] < rating[i]) {
-                    rightSmaller++;
-                } else if (rating[k] > rating[i]) {
-                    rightBigger++;
-                }
-            }
-
-            res += ((leftSmaller * rightBigger) + (leftBigger * rightSmaller));
-        }
-
-        return res;
-    }
+				boolean ans = canPartition(arr, n);
+				pw.println(ans);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			pw.flush();
+			pw.close();
+		}	
+	}
 }
