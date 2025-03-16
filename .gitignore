@@ -2,3 +2,4 @@
 **/*.exe
 in.txt
 op.txt
+**/*.obj
