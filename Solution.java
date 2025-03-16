@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,16 +9,6 @@ import java.util.stream.*;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
-public record Pair<U, V>(
-    U first, 
-    V second
-) {}
-
-public record Trio<U, V, W>(
-    U first, 
-    V second,
-    W third
-) {}
 
 public class Solution 
 {
