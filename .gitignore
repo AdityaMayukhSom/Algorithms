@@ -3,3 +3,7 @@
 in.txt
 op.txt
 **/*.obj
+
+# this is the folder in which code360
+# testcases are downloaded by dafault
+small/**

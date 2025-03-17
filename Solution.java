@@ -1,11 +1,12 @@
-import java.io.PrintWriter;
-import java.io.UncheckedIOException;
-import java.util.stream.IntStream;
-import java.io.BufferedReader;
+import java.util.Arrays;
 import java.util.StringTokenizer;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.stream.IntStream;
+import java.io.PrintWriter;
 import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 
 record Pair(int first, int second)
 {
@@ -57,7 +58,9 @@ final class FastReader
             }
             catch (IOException ioe)
             {
-                System.out.println("Trouble reading from the file: " + ioe.getMessage());
+                System.out.println(
+                    "Trouble reading from the file: " + ioe.getMessage()
+                );
                 // ioe.printStackTrace();
             }
         }
@@ -109,42 +112,46 @@ public class Solution
     private static FastReader fr;
     private static PrintWriter pw;
 
-    public static boolean canPartition(int[] arr, int n)
+    public static int minSubsetSumDifference(int []arr, int n) 
     {
         int sum = IntStream.of(arr).sum();
-
-        if ((sum & 1) == 1)
-        {
-            return false;
-        }
-
-        int t = sum / 2;
-
-        int[] prev = new int[t + 1];
-        int[] curr = new int[t + 1];
+        // if sum is 4, we need 0 to 2
+        // if sum is 3, we need 0 to 1
+        // if sum is 2, we need 0 to 1
+        // so max value is sum / 2
+        int k = sum / 2;
+        
+        int[] prev = new int[k + 1];
+        int[] curr = new int[k + 1];
         int[] temp;
 
-        for (int i = 0; i <= t; ++i)
+        // From index o and backwards, the only subset sum
+        // which we can get is the value of index zero. As
+        // here we are having k as sum / 2, hence we need to
+        // check if arr[0] is lesser than or equal to k, otherwise
+        // if k was sum itself, in an all positive array, arr[0]
+        // will definitely be lesser than or equal to k, hence
+        // the if statement wouldn't have been necessary.
+        if(arr[0] <= k)
         {
-            prev[i] = ((i < n) && (arr[i] == i)) ? 1 : 0;
+            prev[arr[0]] = 1;
         }
 
         prev[0] = 1;
         curr[0] = 1;
 
-        for (int i = 1; i < n; ++i)
+        for(int i = 1; i < n; ++i)
         {
-            for (int j = 1; j <= t; ++j)
+            for(int j = 1; j <= k; ++j)
             {
                 int tk = 0;
-
-                if (j >= arr[i])
+                if(j >= arr[i])
                 {
                     tk = prev[j - arr[i]];
                 }
 
                 int nt = prev[j];
-                curr[j] = (tk | nt);
+                curr[j] = tk | nt;
             }
 
             temp = prev;
@@ -152,31 +159,45 @@ public class Solution
             curr = temp;
         }
 
-        return (prev[t] == 1);
+        int minDiff = sum;
+
+        for(int i = k; i >= 0; --i) 
+        {
+            if(prev[i] == 1)
+            {
+                minDiff = sum - 2 * i;
+                break;
+            }
+        }
+
+        return minDiff;
     }
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
+        fr = new FastReader("./in.txt");
+        pw = new PrintWriter("./op.txt");
+
         try
         {
-            fr = new FastReader("./in.txt");
-            pw = new PrintWriter("./op.txt");
+            // int t = fr.nextInt();
 
-            int t = fr.nextInt();
+            // while (t-- > 0)
+            // {
+            int n = fr.nextInt();
+            int[] arr = new int[n];
 
-            while (t-- > 0)
+            for (int i = 0; i < n; ++i)
             {
-                int n = fr.nextInt();
-                int[] arr = new int[n];
-
-                for (int i = 0; i < n; ++i)
-                {
-                    arr[i] = fr.nextInt();
-                }
-
-                boolean ans = canPartition(arr, n);
-                pw.println(ans);
+                arr[i] = fr.nextInt();
             }
+
+            // whatever change you're doing in function 
+            // calling do that here
+            int ans = minSubsetSumDifference(arr, n);
+
+            pw.println(ans);
+            // }
         }
         catch (Exception e)
         {
@@ -184,15 +205,8 @@ public class Solution
         }
         finally
         {
-            try
-            {
-                pw.flush();
-                pw.close();
-            }
-            catch (Exception e)
-            {
-                System.err.println("Some Error Occured: " + e.getMessage());
-            }
+            pw.flush();
+            pw.close();
         }
     }
 }
