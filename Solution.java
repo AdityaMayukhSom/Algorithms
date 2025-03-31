@@ -112,65 +112,9 @@ public class Solution
     private static FastReader fr;
     private static PrintWriter pw;
 
-    public static int minSubsetSumDifference(int []arr, int n) 
+    public static int findWays(final int num[], final int tar) 
     {
-        int sum = IntStream.of(arr).sum();
-        // if sum is 4, we need 0 to 2
-        // if sum is 3, we need 0 to 1
-        // if sum is 2, we need 0 to 1
-        // so max value is sum / 2
-        int k = sum / 2;
-        
-        int[] prev = new int[k + 1];
-        int[] curr = new int[k + 1];
-        int[] temp;
-
-        // From index o and backwards, the only subset sum
-        // which we can get is the value of index zero. As
-        // here we are having k as sum / 2, hence we need to
-        // check if arr[0] is lesser than or equal to k, otherwise
-        // if k was sum itself, in an all positive array, arr[0]
-        // will definitely be lesser than or equal to k, hence
-        // the if statement wouldn't have been necessary.
-        if(arr[0] <= k)
-        {
-            prev[arr[0]] = 1;
-        }
-
-        prev[0] = 1;
-        curr[0] = 1;
-
-        for(int i = 1; i < n; ++i)
-        {
-            for(int j = 1; j <= k; ++j)
-            {
-                int tk = 0;
-                if(j >= arr[i])
-                {
-                    tk = prev[j - arr[i]];
-                }
-
-                int nt = prev[j];
-                curr[j] = tk | nt;
-            }
-
-            temp = prev;
-            prev = curr;
-            curr = temp;
-        }
-
-        int minDiff = sum;
-
-        for(int i = k; i >= 0; --i) 
-        {
-            if(prev[i] == 1)
-            {
-                minDiff = sum - 2 * i;
-                break;
-            }
-        }
-
-        return minDiff;
+        return 0;
     }
 
     public static void main(String[] args) throws Exception
@@ -194,9 +138,9 @@ public class Solution
 
             // whatever change you're doing in function 
             // calling do that here
-            int ans = minSubsetSumDifference(arr, n);
+            // int ans = minSubsetSumDifference(arr, n);
 
-            pw.println(ans);
+            // pw.println(ans);
             // }
         }
         catch (Exception e)
