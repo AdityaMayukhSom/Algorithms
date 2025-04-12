@@ -8,56 +8,39 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-record Pair(int first, int second)
-{
+record Pair(int first, int second) {
 }
 
-record Trio(int first, int second, int third)
-{
+record Trio(int first, int second, int third) {
 }
 
-final class FastReader
-{
+final class FastReader {
     private StringTokenizer s;
     private final BufferedReader b;
 
-    public FastReader()
-    {
-        try
-        {
+    public FastReader() {
+        try {
             InputStreamReader isr = new InputStreamReader(System.in, "UTF-8");
             this.b = new BufferedReader(isr);
-
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             throw new UncheckedIOException(ioe);
         }
     }
 
-    public FastReader(final String filename)
-    {
-        try
-        {
+    public FastReader(final String filename) {
+        try {
             FileReader fr = new FileReader(filename);
             this.b = new BufferedReader(fr);
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             throw new UncheckedIOException(ioe);
         }
     }
 
-    private String next()
-    {
-        while (s == null || !s.hasMoreElements())
-        {
-            try
-            {
+    private String next() {
+        while (s == null || !s.hasMoreElements()) {
+            try {
                 s = new StringTokenizer(b.readLine());
-            }
-            catch (IOException ioe)
-            {
+            } catch (IOException ioe) {
                 System.out.println("Trouble reading from the file: " + ioe.getMessage());
                 // ioe.printStackTrace();
             }
@@ -66,38 +49,28 @@ final class FastReader
         return s.nextToken();
     }
 
-    public int nextInt()
-    {
+    public int nextInt() {
         return Integer.parseInt(next());
     }
 
-    public long nextLong()
-    {
+    public long nextLong() {
         return Long.parseLong(next());
     }
 
-    public double nextDouble()
-    {
+    public double nextDouble() {
         return Double.parseDouble(next());
     }
 
-    public String nextLine()
-    {
+    public String nextLine() {
         String str = "";
 
-        try
-        {
-            if (s.hasMoreTokens())
-            {
+        try {
+            if (s.hasMoreTokens()) {
                 str = s.nextToken("\n");
-            }
-            else
-            {
+            } else {
                 str = b.readLine();
             }
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             System.out.println("Trouble reading from file: " + ioe.getMessage());
         }
 
@@ -105,47 +78,38 @@ final class FastReader
     }
 }
 
-public class Solution
-{
+public class Solution {
     private static FastReader fr;
     private static PrintWriter pw;
 
-    public int findPairs(int[] nums, int k)
-    {
+    public int findPairs(int[] nums, int k) {
+        int n = nums.length;
+        
         // Pair cannot exists if there is no element of a single element.
-        if (n == 0 || n == 1)
-        {
+        if (n == 0 || n == 1) {
             return 0;
-        }   
-        
-        Arrays.sort(nums);  
-        
-        int l = 0, r = 1, cnt = 0, n = nums.length; 
+        }
 
-        while (r < n)
-        {
-            if (nums[r] - nums[l] > k)
-            {
-                l++; 
+        Arrays.sort(nums);
 
-                if (l == r)
-                {
+        int l = 0, r = 1, cnt = 0;
+
+        while (r < n) {
+            if (nums[r] - nums[l] > k) {
+                l++;
+
+                if (l == r) {
                     r++;
                 }
-            }
-            else if (nums[r] - nums[l] == k)
-            {
+            } else if (nums[r] - nums[l] == k) {
                 cnt++;
                 r++;
                 l++;
 
-                while (r < n && nums[r] == nums[r - 1])
-                {
+                while (r < n && nums[r] == nums[r - 1]) {
                     r++;
                 }
-            }
-            else if (nums[r] - nums[l] < k)
-            {
+            } else if (nums[r] - nums[l] < k) {
                 r++;
             }
         }
@@ -153,23 +117,19 @@ public class Solution
         return cnt;
     }
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         fr = new FastReader("./in.txt");
         pw = new PrintWriter("./op.txt");
 
-        try
-        {
+        try {
             Solution sol = new Solution();
             int t = fr.nextInt();
 
-            while (t-- > 0)
-            {
+            while (t-- > 0) {
                 int n = fr.nextInt();
                 int[] A = new int[n];
 
-                for (int i = 0; i < n; ++i)
-                {
+                for (int i = 0; i < n; ++i) {
                     A[i] = fr.nextInt();
                 }
 
@@ -180,13 +140,9 @@ public class Solution
 
                 pw.println(ans);
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             System.err.println("Some Error Occured: " + e.getMessage());
-        }
-        finally
-        {
+        } finally {
             pw.flush();
             pw.close();
         }
