@@ -1,20 +1,22 @@
-import java.util.Arrays;
-import java.util.StringTokenizer;
-import java.util.stream.IntStream;
-import java.io.PrintWriter;
-import java.io.FileReader;
+
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import java.util.StringTokenizer;
 
 record Pair(int first, int second) {
+
 }
 
 record Trio(int first, int second, int third) {
+
 }
 
 final class FastReader {
+
     private StringTokenizer s;
     private final BufferedReader b;
 
@@ -79,42 +81,68 @@ final class FastReader {
 }
 
 public class Solution {
+
     private static FastReader fr;
     private static PrintWriter pw;
 
-    public int findPairs(int[] nums, int k) {
-        int n = nums.length;
-        
-        // Pair cannot exists if there is no element of a single element.
-        if (n == 0 || n == 1) {
-            return 0;
+    public String findLCS(int m, int n, String s1, String s2) {
+        if (m == 0 || n == 0) {
+            return "";
         }
 
-        Arrays.sort(nums);
+        int[][] dp = new int[m][n];
 
-        int l = 0, r = 1, cnt = 0;
+        int p = s2.indexOf(s1.charAt(0));
+        int q = s1.indexOf(s2.charAt(0));
 
-        while (r < n) {
-            if (nums[r] - nums[l] > k) {
-                l++;
+        for (int j = p; p >= 0 && j < n; ++j) {
+            dp[0][j] = 1;
+        }
 
-                if (l == r) {
-                    r++;
+        for (int i = q; q >= 0 && i < m; ++i) {
+            dp[i][0] = 1;
+        }
+
+        for (int i = 1; i < m; ++i) {
+            for (int j = 1; j < n; ++j) {
+                if (s1.charAt(i) == s2.charAt(j)) {
+                    dp[i][j] = 1 + dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = Math.max(
+                            dp[i][j - 1],
+                            dp[i - 1][j]
+                    );
                 }
-            } else if (nums[r] - nums[l] == k) {
-                cnt++;
-                r++;
-                l++;
-
-                while (r < n && nums[r] == nums[r - 1]) {
-                    r++;
-                }
-            } else if (nums[r] - nums[l] < k) {
-                r++;
             }
         }
 
-        return cnt;
+        p = m - 1;
+        q = n - 1;
+        pw.println(dp[p][q]);
+        StringBuilder sb = new StringBuilder(dp[p][q]);
+
+        while (p > 0 && q > 0) {
+            if (s1.charAt(p) == s2.charAt(q)) {
+                sb.insert(0, s1.charAt(p));
+                p--;
+                q--;
+            } else {
+                if (dp[p - 1][q] > dp[p][q - 1]) {
+                    p--;
+                } else {
+                    q--;
+                }
+            }
+        }
+
+        if (dp[p][q] == 1) {
+            // in this case, char at p and q will be equal
+            // for zeroth row or column, all values are either
+            // zero or one, hence checking for one is enough.
+            sb.insert(0, (p == 0) ? s1.charAt(p) : s2.charAt(q));
+        }
+
+        return sb.toString();
     }
 
     public static void main(String[] args) throws Exception {
@@ -123,23 +151,25 @@ public class Solution {
 
         try {
             Solution sol = new Solution();
-            int t = fr.nextInt();
+            // int t = fr.nextInt();
 
-            while (t-- > 0) {
-                int n = fr.nextInt();
-                int[] A = new int[n];
+            // while (t-- > 0) {
+            int m = fr.nextInt();
+            int n = fr.nextInt();
+            // int[] A = new int[n];
 
-                for (int i = 0; i < n; ++i) {
-                    A[i] = fr.nextInt();
-                }
+            // for (int i = 0; i < n; ++i) {
+            //     A[i] = fr.nextInt();
+            // }
+            // int k = fr.nextInt();
+            String s1 = fr.nextLine().strip();
+            String s2 = fr.nextLine().strip();
 
-                int k = fr.nextInt();
+            // whatever change you're doing in function calling do that here
+            String ans = sol.findLCS(m, n, s1, s2);
 
-                // whatever change you're doing in function calling do that here
-                int ans = sol.findPairs(A, k);
-
-                pw.println(ans);
-            }
+            pw.println(ans);
+            // }
         } catch (Exception e) {
             System.err.println("Some Error Occured: " + e.getMessage());
         } finally {
