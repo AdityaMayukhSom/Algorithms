@@ -1,22 +1,16 @@
-
+import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.util.StringTokenizer;
 
-record Pair(int first, int second) {
+record Pair(int first, int second) {}
 
-}
-
-record Trio(int first, int second, int third) {
-
-}
+record Trio(int first, int second, int third) {}
 
 final class FastReader {
-
     private StringTokenizer s;
     private final BufferedReader b;
 
@@ -80,8 +74,8 @@ final class FastReader {
     }
 }
 
-public class Solution {
 
+public class Solution {
     private static FastReader fr;
     private static PrintWriter pw;
 
@@ -104,9 +98,9 @@ public class Solution {
             return;
         }
 
-        for (int i = 0; i < m; i++) {
+        for (int[] ints : grid) {
             for (int j = 0; j < n; ++j) {
-                pw.print(grid[i][j] + " ");
+                pw.print(ints[j] + " ");
             }
             pw.println();
         }
@@ -152,8 +146,8 @@ public class Solution {
     }
 
     public static void main(String[] args) throws Exception {
-        fr = new FastReader("./in.txt");
-        pw = new PrintWriter("./op.txt");
+        fr = new FastReader("./data/input.txt");
+        pw = new PrintWriter("./data/output.txt");
 
         try {
             Solution sol = new Solution();
