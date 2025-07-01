@@ -6,7 +6,6 @@ def read_array():
     tokens = line.replace(',', ' ').split()
     return [int(tok) for tok in tokens if tok.strip().isdigit()]
 
-
 class Algorithm:
     def next_permutation(self, arr: list[int]) -> list[int]:
         n = len(arr)
@@ -43,11 +42,11 @@ class Algorithm:
 
     def rotate_matrix(self, M: list[list[int]]) -> None:
         n = len(M)
-        
+           
         # reverse transpose
         for i in range(0, n):
             for j in range(0, n - i):
-                p = n - 1 - j
+                p = n - 1 - j       
                 q = n - 1 - i
                 
                 M[i][j], M[p][q] = M[p][q], M[i][j]
@@ -60,8 +59,6 @@ class Algorithm:
                 M[i][l], M[i][r] = M[i][r], M[i][l]
                 l += 1
                 r -= 1
-                
-
 
 def main():
     sys.stdin = open('./data/input.txt', 'r', encoding='utf-8')

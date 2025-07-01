@@ -8,7 +8,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.StringTokenizer;
 
-public final class FastIO implements AutoCloseable {
+public class FastIO implements AutoCloseable {
 
     private StringTokenizer st;
     private final BufferedReader br;
@@ -86,10 +86,10 @@ public final class FastIO implements AutoCloseable {
 
     public int[] nextIntArray() {
         String[] S = nextLine()
-            .replace("[", "")
-            .replace("]", "")
-            .replace(",", " ")
-            .split("\\s+");
+                .replace("[", "")
+                .replace("]", "")
+                .replace(",", " ")
+                .split("\\s+");
 
         int[] A = new int[S.length];
 
