@@ -2,7 +2,7 @@ ROOT = .
 SRC_DIR = $(ROOT)/source
 SRC = $(wildcard $(SRC_DIR)/*.java)
 OUT = $(ROOT)/build
-MAIN = Algorithm
+MAIN = Solution
 
 build:
 	mkdir -p $(OUT)
