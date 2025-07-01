@@ -1,5 +1,12 @@
 import sys
 
+def read_array():
+    line = input().strip()
+    line = line.replace('[', '').replace(']', '').strip()
+    tokens = line.replace(',', ' ').split()
+    return [int(tok) for tok in tokens if tok.strip().isdigit()]
+
+
 class Algorithm:
     def next_permutation(self, arr: list[int]) -> list[int]:
         n = len(arr)
@@ -55,14 +62,6 @@ class Algorithm:
                 r -= 1
                 
 
-def read_array():
-    line = input().strip()
-    # Remove brackets and strip leading/trailing whitespace
-    line = line.replace('[', '').replace(']', '').strip()
-    # Replace commas with spaces, then split on whitespace
-    tokens = line.replace(',', ' ').split()
-    # Convert all tokens to integers
-    return [int(tok) for tok in tokens if tok.strip().isdigit()]
 
 def main():
     sys.stdin = open('./data/input.txt', 'r', encoding='utf-8')
