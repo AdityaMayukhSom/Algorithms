@@ -86,6 +86,7 @@ public class FastIO implements AutoCloseable {
 
     public int[] nextIntArray() {
         String[] S = nextLine()
+                .replace("\"", "")
                 .replace("[", "")
                 .replace("]", "")
                 .replace(",", " ")
