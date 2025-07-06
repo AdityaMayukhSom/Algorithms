@@ -17,7 +17,7 @@ public class Solution {
                 // String s2 = fio.nextLine();
 
                 Algorithm algo = new Algorithm();
-                var ans = algo.majorityElementTwo(A);
+                var ans = algo.threeSum(A);
 
                 fio.pw.println(ans);
             }

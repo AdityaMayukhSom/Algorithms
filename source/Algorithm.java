@@ -1,58 +1,78 @@
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Algorithm {
 
-    public List<Integer> majorityElementTwo(int[] nums) {
-        int cnt1 = 0;
-        int cnt2 = 0;
-        int num1 = Integer.MIN_VALUE;
-        int num2 = Integer.MIN_VALUE;
-        int threshold = nums.length / 3;
+    public List<List<Integer>> threeSum(int[] arr, int target) {
+        List<List<Integer>> result = new ArrayList<>();
+        Map<Integer, Integer> map = new HashMap<>();
 
-        for (int num : nums) {
-            if (num == num1) {
-                cnt1++;
-            } else if (num == num2) {
-                cnt2++;
-            } else if (cnt1 == 0 && num != num2) {
-                cnt1 = 1;
-                num1 = num;
-            } else if (cnt2 == 0 && num != num1) {
-                cnt2 = 1;
-                num2 = num;
-            } else {
-                cnt1--;
-                cnt2--;
+        for (int i = 0; i < arr.length - 2; i++) {
+            for (int j = i + 1; j < arr.length; j++) {
+                int val = target - (arr[i] + arr[j]);
+                int cnt = map.getOrDefault(val, 0);
+                for (int k = 0; k < cnt; k++) {
+                    List<Integer> list = Arrays.asList(arr[i], arr[j], val);
+                    Collections.sort(list);
+                    result.add(list);
+                }
+                map.put(arr[j], cnt + 1);
+            }
+            map.clear();
+        }
+        return result;
+    }
+
+    public List<List<Integer>> threeSum(int[] nums) {
+        int n = nums.length;
+        Arrays.sort(nums);
+
+        List<List<Integer>> res = new ArrayList<>();
+
+        int i = 0, j, k, sum, currI, currJ, currK;
+        while (i < n) {
+            j = i + 1;
+            k = n - 1;
+
+            while (j < k) {
+                sum = nums[j] + nums[k] + nums[i];
+                if (sum == 0) {
+                    res.add(Arrays.asList(nums[i], nums[j], nums[k]));
+
+                    currJ = nums[j];
+                    while (j < n && nums[j] == currJ) {
+                        j++;
+                    }
+
+                    currK = nums[k];
+                    while (k > 0 && nums[k] == currK) {
+                        k--;
+                    }
+
+                } else if (sum < 0) {
+                    currJ = nums[j];
+                    while (j < n && nums[j] == currJ) {
+                        j++;
+                    }
+                } else if (sum > 0) {
+                    currK = nums[k];
+                    while (k > 0 && nums[k] == currK) {
+                        k--;
+                    }
+                }
+            }
+
+            currI = nums[i];
+            while (i < n && nums[i] == currI) {
+                i++;
             }
         }
 
-        cnt1 = cnt2 = 0;
-        for (int num : nums) {
-            if (num == num1) {
-                cnt1++;
-            }
-            if (num == num2) {
-                cnt2++;
-            }
-        }
-
-        List<Integer> ans = new ArrayList<>();
-        if (cnt1 > threshold) {
-            ans.add(num1);
-        }
-
-        if (cnt2 > threshold) {
-            ans.add(num2);
-        }
-
-        if (ans.size() == 2 && ans.get(0) > ans.get(1)) {
-            ans.set(0, ans.get(0) ^ ans.get(1));
-            ans.set(1, ans.get(0) ^ ans.get(1));
-            ans.set(0, ans.get(0) ^ ans.get(1));
-        }
-
-        return ans;
+        return res;
     }
 }
