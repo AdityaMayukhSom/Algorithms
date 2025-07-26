@@ -9,15 +9,17 @@ public class Solution {
             int t = fio.nextInt();
             while (t-- > 0) {
                 // int m = fr.nextInt();
-                // int n = fio.nextInt();
+                int n = fio.nextInt();
                 int[] A = fio.nextIntArray();
+                int[] B = fio.nextIntArray();
+                int[] C = fio.nextIntArray();
                 // List<Integer> L = IntStream.of(A).boxed().toList();
                 // int k = fio.nextInt();
                 // String s1 = fio.nextLine();
                 // String s2 = fio.nextLine();
 
-                Algorithm algo = new Algorithm();
-                var ans = algo.threeSum(A);
+                // Algorithm algo = new Algorithm();
+                var ans = Algorithm.findMaxProfit(A, B, C);
 
                 fio.pw.println(ans);
             }

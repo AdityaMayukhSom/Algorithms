@@ -2,77 +2,83 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+class Job {
+
+    public final int start;
+    public final int end;
+    public final int profit;
+
+    public Job(final int _start, final int _end, final int _profit) {
+        this.start = _start;
+        this.end = _end;
+        this.profit = _profit;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Job[start = %d, end = %d, profit = %d]", this.start, this.end, this.profit);
+    }
+
+}
 
 public class Algorithm {
 
-    public List<List<Integer>> threeSum(int[] arr, int target) {
-        List<List<Integer>> result = new ArrayList<>();
-        Map<Integer, Integer> map = new HashMap<>();
-
-        for (int i = 0; i < arr.length - 2; i++) {
-            for (int j = i + 1; j < arr.length; j++) {
-                int val = target - (arr[i] + arr[j]);
-                int cnt = map.getOrDefault(val, 0);
-                for (int k = 0; k < cnt; k++) {
-                    List<Integer> list = Arrays.asList(arr[i], arr[j], val);
-                    Collections.sort(list);
-                    result.add(list);
-                }
-                map.put(arr[j], cnt + 1);
+    /* Note that jobs are sorted based on the end time of the job. */
+    private static int jobEndingBeforeStartTime(List<Job> jobs, int st, int l, int r) {
+        int pos = -1, m;
+        while (l <= r) {
+            m = l + ((r - l) >> 1);
+            if (jobs.get(m).end <= st) {
+                pos = m;
+                l = m + 1;
+            } else {
+                r = m - 1;
             }
-            map.clear();
         }
-        return result;
+        return pos;
     }
 
-    public List<List<Integer>> threeSum(int[] nums) {
-        int n = nums.length;
-        Arrays.sort(nums);
-
-        List<List<Integer>> res = new ArrayList<>();
-
-        int i = 0, j, k, sum, currI, currJ, currK;
-        while (i < n) {
-            j = i + 1;
-            k = n - 1;
-
-            while (j < k) {
-                sum = nums[j] + nums[k] + nums[i];
-                if (sum == 0) {
-                    res.add(Arrays.asList(nums[i], nums[j], nums[k]));
-
-                    currJ = nums[j];
-                    while (j < n && nums[j] == currJ) {
-                        j++;
-                    }
-
-                    currK = nums[k];
-                    while (k > 0 && nums[k] == currK) {
-                        k--;
-                    }
-
-                } else if (sum < 0) {
-                    currJ = nums[j];
-                    while (j < n && nums[j] == currJ) {
-                        j++;
-                    }
-                } else if (sum > 0) {
-                    currK = nums[k];
-                    while (k > 0 && nums[k] == currK) {
-                        k--;
-                    }
-                }
-            }
-
-            currI = nums[i];
-            while (i < n && nums[i] == currI) {
-                i++;
-            }
+    private static long dfs(List<Job> jobs, int i, long[] dp) {
+        if (i == 0) {
+            return dp[0] = jobs.get(0).profit;
         }
 
-        return res;
+        if (dp[i] != -1) {
+            return dp[i];
+        }
+
+        // we can always pick the current job, and in case no previous job with
+        // smaller end time exists, we can use current job's profit as if it is 
+        // the only job that we've taken.
+        long pick = jobs.get(i).profit;
+        int prev = jobEndingBeforeStartTime(jobs, jobs.get(i).start, 0, i - 1);
+        if (prev != -1) {
+            pick += dfs(jobs, prev, dp);
+        }
+
+        long skip = dfs(jobs, i - 1, dp);
+        return dp[i] = Math.max(pick, skip);
+    }
+
+    public static long findMaxProfit(int[] start, int[] end, int[] profit) {
+        assert start.length == end.length;
+        assert start.length == profit.length;
+
+        int n = start.length;
+        List<Job> jobs = new ArrayList<>(n);
+
+        for (int i = 0; i < n; ++i) {
+            Job job = new Job(start[i], end[i], profit[i]);
+            jobs.add(job);
+        }
+
+        Collections.sort(jobs, (j1, j2) -> (j1.end - j2.end));
+
+        long[] dp = new long[n];
+        Arrays.fill(dp, -1);
+
+        return dfs(jobs, n - 1, dp);
     }
 }
