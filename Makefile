@@ -1,21 +1,24 @@
 ROOT = .
 SRC_DIR = $(ROOT)/source
-SRC = $(wildcard $(SRC_DIR)/*.java)
-OUT = $(ROOT)/build
-MAIN = Solution
+SRC = $(SRC_DIR)/Main.java
+OUT_DIR = $(ROOT)/build
+MAIN = Main
 
 build:
-	mkdir -p $(OUT)
-	javac -Xlint:all -Werror -g -d $(OUT) -cp "$(ROOT):$(SRC_DIR)" $(SRC)
+	mkdir -p $(OUT_DIR)
+	javac -deprecation -Xlint:all -Werror -g -d $(OUT_DIR) -cp "$(SRC_DIR)" $(SRC)
 
 .PHONY: build
 
 clean:
-	rm -rf $(OUT)/*
+	rm -rf $(OUT_DIR)/*
 
 .PHONY: clean
 
 run: build
-	java -cp "$(OUT):$(SRC_DIR)" $(MAIN)
+	java -cp "$(OUT_DIR)" $(MAIN)
 
-.PHONY: run
+diff: run
+	diff ./data/output.txt ./data/correct.txt
+
+.PHONY: diff
