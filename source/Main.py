@@ -1,3 +1,4 @@
+import os
 import sys
 
 class IO:
@@ -102,15 +103,17 @@ def main():
     in_file = "./data/input.txt"
     out_file = "./data/output.txt"
     
-    sys.stdin = open(in_file, "r", encoding="utf-8")
-    sys.stdout = open(out_file, "w", encoding="utf-8")
+    if os.path.exists(in_file):
+        sys.stdin = open(in_file, "r", encoding="utf-8")
+        sys.stdout = open(out_file, "w", encoding="utf-8")
 
     t: int = int(input())
     while t > 0:
         n: int = int(input())
         A = read_int_array()
         B = read_int_array()
-        print(expectedBinarySearch(n, A, B))
+        sol = Solution()
+        print(sol.solve(n, A, B))
         t -= 1
 
 

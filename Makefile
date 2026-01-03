@@ -1,24 +1,23 @@
 ROOT = .
+MAIN_CLASS = Main
 SRC_DIR = $(ROOT)/source
-SRC = $(SRC_DIR)/Main.java
+SRC = $(SRC_DIR)/$(MAIN_CLASS).java
 OUT_DIR = $(ROOT)/build
-MAIN = Main
 
-build:
-	mkdir -p $(OUT_DIR)
-	javac -deprecation -Xlint:all -Werror -g -d $(OUT_DIR) -cp "$(SRC_DIR)" $(SRC)
-
-.PHONY: build
-
+.PHONY: clean
 clean:
 	rm -rf $(OUT_DIR)/*
 
-.PHONY: clean
+.PHONY: ensure_out_dir
+ensure_out_dir:
+	mkdir -p $(OUT_DIR)
 
+.PHONY: build
+build: ensure_out_dir
+	javac -deprecation -Xlint:all -Werror -g -d $(OUT_DIR) -cp "$(SRC_DIR)" $(SRC)
+
+.PHONY: run
 run: build
-	java -cp "$(OUT_DIR)" $(MAIN)
+	java -cp "$(OUT_DIR)" $(MAIN_CLASS)
 
-diff: run
-	diff ./data/output.txt ./data/correct.txt
-
-.PHONY: diff
+.DEFAULT_GOAL := run

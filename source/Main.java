@@ -1,12 +1,142 @@
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+
+class DiffRunner {
+    private static record DiffSet(String d1, String d2, int count) {
+    };
+
+    // Colors https://gist.github.com/mgumiero9/665ab5f0e5e7e46cb049c1544a00e29f
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_RED = "\u001B[31m";
+    private static final String ANSI_GREEN = "\u001B[32m";
+    private static final String ANSI_CYAN = "\u001B[36m";
+    private static final String ANSI_PURPLE = "\u001B[35m";
+
+    private static final String NULL_REPR = "NIL";
+    private static final char ADD_SIGN = '+';
+    private static final char SUB_SIGN = '-';
+
+    private void writeLineDiff(long lineNumber, DiffSet ds) {
+        if (ds == null) {
+            return;
+        }
+
+        final String headStringFmt = "@@ L%d D%d @@\n";
+        final String headString = String.format(headStringFmt, lineNumber, ds.count());
+
+        final StringBuilder res = new StringBuilder();
+
+        res.append(ANSI_CYAN).append(headString).append(ANSI_RESET);
+        res.append(ANSI_RED).append(SUB_SIGN).append(ANSI_RESET);
+        res.append(ds.d1());
+        res.append('\n');
+        res.append(ANSI_GREEN).append(ADD_SIGN).append(ANSI_RESET);
+        res.append(ds.d2());
+
+        System.out.println(res);
+    }
+
+    private DiffSet lineDiff(String l1, String l2) {
+
+        if (l1 == null && l2 == null) {
+            // No diff present if both are null
+            return null;
+        }
+
+        if (l1 != null) {
+            l1 = l1.stripTrailing();
+        }
+
+        if (l2 != null) {
+            l2 = l2.stripTrailing();
+        }
+
+        StringBuilder diff1 = new StringBuilder();
+        StringBuilder diff2 = new StringBuilder();
+
+        int diffCount = 0;
+
+        if (l1 == null || l2 == null) {
+            if (l1 != null) {
+                diff1.append(ANSI_RED).append(l1).append(ANSI_RESET);
+                diff2.append(ANSI_PURPLE).append(NULL_REPR).append(ANSI_RESET);
+                diffCount = l1.length();
+            } else if (l2 != null) {
+                diff1.append(ANSI_PURPLE).append(NULL_REPR).append(ANSI_RESET);
+                diff2.append(ANSI_GREEN).append(l2).append(ANSI_RESET);
+                diffCount = l2.length();
+            }
+
+            return new DiffSet(diff1.toString(), diff2.toString(), diffCount);
+        }
+
+        int mn = Math.min(l1.length(), l2.length());
+
+        for (int i = 0; i < mn; i++) {
+            final char c1 = l1.charAt(i);
+            final char c2 = l2.charAt(i);
+
+            if (c1 != c2) {
+                diffCount++;
+                diff1.append(ANSI_RED).append(c1).append(ANSI_RESET);
+                diff2.append(ANSI_GREEN).append(c2).append(ANSI_RESET);
+            } else {
+                diff1.append(c1);
+                diff2.append(c2);
+            }
+        }
+
+        for (int i = mn; i < l1.length(); i++) {
+            diffCount++;
+            diff1.append(ANSI_RED).append(l1.charAt(i)).append(ANSI_RESET);
+        }
+
+        for (int i = mn; i < l2.length(); i++) {
+            diffCount++;
+            diff2.append(ANSI_GREEN).append(l2.charAt(i)).append(ANSI_RESET);
+        }
+
+        return new DiffSet(diff1.toString(), diff2.toString(), diffCount);
+    }
+
+    public void fileDiff(String target, String result) {
+
+        final Path p1 = Path.of(target);
+        final Path p2 = Path.of(result);
+
+        try (
+                final BufferedReader b1 = Files.newBufferedReader(p1);
+                final BufferedReader b2 = Files.newBufferedReader(p2)) {
+
+            System.out.println("--- " + p1.toRealPath());
+            System.out.println("+++ " + p2.toRealPath());
+
+            String l1, l2;
+            long lineNumber = 0;
+
+            do {
+                l1 = b1.readLine();
+                l2 = b2.readLine();
+                DiffSet ds = lineDiff(l1, l2);
+                writeLineDiff(++lineNumber, ds);
+            } while (l1 != null || l2 != null);
+        } catch (FileNotFoundException e) {
+            System.err.println("unable to find file: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("io exception occurred: " + e.getMessage());
+        }
+    }
+}
 
 class FastIO implements AutoCloseable {
 
@@ -20,6 +150,15 @@ class FastIO implements AutoCloseable {
     public FastIO() {
         this.br = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         this.pw = new PrintWriter(System.out);
+    }
+
+    public FastIO(final String inputFilePath) {
+        try {
+            this.br = new BufferedReader(new FileReader(inputFilePath, StandardCharsets.UTF_8));
+            this.pw = new PrintWriter(System.out);
+        } catch (IOException ioe) {
+            throw new UncheckedIOException(ioe);
+        }
     }
 
     public FastIO(final String inputFilePath, final String outputFilePath) {
@@ -104,6 +243,25 @@ class FastIO implements AutoCloseable {
         return A;
     }
 
+    public int[][] readPairGraph(int E) {
+        int[][] edges = new int[E][2];
+        for (int i = 0; i < E; ++i) {
+            edges[i][0] = readInt();
+            edges[i][1] = readInt();
+        }
+        return edges;
+    }
+
+    public int[][] readTrioGraph(int E) {
+        int[][] edges = new int[E][3];
+        for (int i = 0; i < E; ++i) {
+            edges[i][0] = readInt();
+            edges[i][1] = readInt();
+            edges[i][2] = readInt();
+        }
+        return edges;
+    }
+
     public List<Integer> readIntList() {
         String[] S = readStrArray();
         List<Integer> A = new ArrayList<>(S.length);
@@ -119,22 +277,39 @@ class FastIO implements AutoCloseable {
         pw.println();
     }
 
-    public void ln(short s) {
-        pw.print(s);
-    }
-
     public void ln(int i) {
         pw.println(i);
     }
 
-    public void ln(int[] list) {
-        pw.println(Arrays.toString(list));
+    public void ln(int[] ints) {
+        StringBuilder sb = new StringBuilder();
+        for (int i : ints) {
+            sb.append(i);
+            sb.append(' ');
+        }
+        ln(sb.toString());
+    }
+
+    public <T> void ln(List<T> list) {
+        StringBuilder sb = new StringBuilder();
+        for (T e : list) {
+            sb.append(e);
+            sb.append(' ');
+        }
     }
 
     public void ln(int[][] grid) {
-        ln(BARRICADE);
+        ln(grid, false);
+    }
 
+    public void ln(int[][] grid, boolean printBarricade) {
         StringBuilder sb = new StringBuilder();
+
+        if (printBarricade) {
+            sb.append(BARRICADE);
+            sb.append('\n');
+        }
+
         for (int[] ints : grid) {
             for (int i : ints) {
                 sb.append(i);
@@ -143,8 +318,11 @@ class FastIO implements AutoCloseable {
             sb.append('\n');
         }
 
+        if (printBarricade) {
+            sb.append(BARRICADE);
+        }
+
         ln(sb.toString());
-        ln(BARRICADE);
     }
 
     public void ln(long l) {
@@ -189,174 +367,118 @@ class FastIO implements AutoCloseable {
     }
 }
 
-class Utils {
-
-    static record Trio(int node, int cost, int jump) {
-
-    }
-
-    static record Pair(int node, int cost) {
-
-    }
-
-}
-
-class Solution extends Utils {
-
+class Commons {
     private static final int MOD = 1000000007;
 
-    private static void performTopologicalSort(int node, final List<List<Pair>> graph, boolean[] vis, List<Integer> topo) {
-        vis[node] = true;
-        for (Pair nbr : graph.get(node)) {
-            int nbrNode = nbr.node();
-            if (!vis[nbrNode]) {
-                performTopologicalSort(nbrNode, graph, vis, topo);
+    boolean isPrime(int n) {
+        if (n <= 1) {
+            return false;
+        }
+
+        if (n <= 3) {
+            return true;
+        }
+
+        if (n % 2 == 0 || n % 3 == 0) {
+            return false;
+        }
+
+        for (int i = 5; i * i <= n; i += 6) {
+            if (n % i == 0) {
+                return false;
+            }
+
+            if (n % (i + 2) == 0) {
+                return false;
             }
         }
-        topo.add(node);
+
+        return true;
     }
 
-    public static int[] maximumDistance(final int V, final int E, final int S, final int[][] edges) {
-        List<List<Pair>> graph = new ArrayList<>();
-        for (int i = 0; i < V; i++) {
-            graph.add(new ArrayList<>());
-        }
-        for (int[] edge : edges) {
-            int u = edge[0];
-            int v = edge[1];
-            int w = edge[2];
-
-            graph.get(u).add(new Pair(v, w));
-        }
-        boolean[] vis = new boolean[V];
-        List<Integer> topo = new ArrayList<>();
-        for (int i = 0; i < V; ++i) {
-            if (!vis[i]) {
-                performTopologicalSort(i, graph, vis, topo);
-            }
-        }
-
-        int[] dist = new int[V];
-        Arrays.fill(dist, Integer.MIN_VALUE);
-        dist[S] = 0;
-        for (int i = V - 1; i >= 0; --i) {
-            int node = topo.get(i);
-            int cost = dist[node];
-            if (cost == Integer.MIN_VALUE) {
-                continue;
-            }
-            for (Pair nbr : graph.get(node)) {
-                int nbrNode = nbr.node();
-                int nbrCost = nbr.cost();
-                int newCost = cost + nbrCost;
-                dist[nbrNode] = Math.max(dist[nbrNode], newCost);
-            }
-        }
-        return dist;
-    }
-
-    public static long minDeliveryTime(int delivery1, int delivery2, int charge1, int charge2) {
-        long time = 0;
-        int done1 = 0, done2 = 0;
-
-        while (done1 < delivery1 || done2 < delivery2) {
-            time++;
-
-            // Drone1 charging?
-            boolean c1 = (time % charge1 == 0);
-            // Drone2 charging?
-            boolean c2 = (time % charge2 == 0);
-
-            if (!c1 && done1 < delivery1) {
-                // Let Drone1 deliver
-                done1++;
-            } else if (!c2 && done2 < delivery2) {
-                // Else let Drone2 deliver
-                done2++;
+    int gcd(int a, int b) {
+        while (a > 0 && b > 0) {
+            if (a > b) {
+                a = a % b;
             } else {
-                // Both might be charging, so no delivery this hour
+                b = b % a;
             }
         }
-        return time;
+
+        return (a == 0) ? b : a;
     }
 
-    public int calculateMinimumSwaps(List<Integer> fileSize, List<Integer> affinity) {
-        int n = fileSize.size();
-
-        Map<Integer, Integer> freqFile = new HashMap<>();
-        Map<Integer, Integer> freqAffinity = new HashMap<>();
-
-        for (int i = 0; i < n; i++) {
-            int cff = freqFile.getOrDefault(fileSize.get(i), 0);
-            freqFile.put(fileSize.get(i), cff + 1);
-            int cfa = freqAffinity.getOrDefault(affinity.get(i), 0);
-            freqAffinity.put(affinity.get(i), cfa + 1);
-        }
-
-        for (int val : freqFile.keySet()) {
-            int countFile = freqFile.get(val);
-            int countAffinity = freqAffinity.getOrDefault(val, 0);
-
-            // if too many of one value appear in fileSize, impossible to place them
-            if (countFile > n - countAffinity) {
-                return -1;
+    int fastPow(int a, int b) {
+        long res = 1;
+        while (b > 0) {
+            if ((b & 1) == 1) {
+                res = (res * a) % MOD;
             }
+
+            b >>= 1;
+            a = (a * a) % MOD;
         }
-
-        List<Integer> matches = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            int f = fileSize.get(i);
-            int a = affinity.get(i);
-            if (f == a) {
-                matches.add(i);
-            }
-        }
-
-        // Because one swap can fix 2 bad positions (if chosen well).
-        int bad = matches.size();
-        int minSwaps = (bad + 1) / 2;
-
-        return minSwaps;
+        return (int) res;
     }
+
+    int nCr(int n, int r) {
+        long res = 1;
+        r = Math.min(r, n - r);
+        for (int i = 1; i <= r; i++) {
+            res = ((res * (n - r + i)) / i) % MOD;
+        }
+        return (int) res;
+    }
+}
+
+class Solution extends Commons {
+
+    public int solve(int a, int b) {
+        return a + b;
+    }
+
 }
 
 public class Main {
+    final static String ONLINE_JUDGE = "ONLINE_JUDGE";
+    final static String IN_PATH = "./data/input.txt";
+    final static String OUT_PATH = "./data/output.txt";
+    final static String EXP_PATH = "./data/correct.txt";
+
+    public static void tc(FastIO io) {
+        int a = io.readInt();
+        int b = io.readInt();
+
+        // int E = io.readInt();
+        // int[][] edges = io.readTrioGraph(E);
+        // int D = fio.nextInt();
+        // int K = fio.nextInt();
+        // int[] F = fio.nextIntArray();
+        // int[] B = fio.nextIntArray();
+        // int k = fio.nextInt();
+        // String s1 = fio.nextLine();
+        // String s2 = fio.nextLine();
+        Solution solution = new Solution();
+        var res = solution.solve(a, b);
+        io.ln(new int[] { res, res + 5 });
+    }
 
     public static void main(String[] args) {
-        final String ONLINE_JUDGE = "ONLINE_JUDGE";
-        final String IN_PATH = "./data/input.txt";
-        final String OUT_PATH = "./data/output.txt";
-
-        boolean isLocal = System.getProperty(ONLINE_JUDGE) == null;
-
+        boolean isLocal = (null == System.getProperty(ONLINE_JUDGE));
         try (FastIO io = isLocal ? new FastIO(IN_PATH, OUT_PATH) : new FastIO()) {
             int t = io.readInt();
-            while (t-- > 0) {
-                int n = io.readInt();
-                var S = io.readIntList();
-                var A = io.readIntList();
 
-                // int[][] edges = new int[E][];
-                //
-                // for (int i = 0; i < E; ++i) {
-                //     int[] edge = fio.nextIntArray();
-                //     assert edge.length == 3;
-                //     edges[i] = edge;
-                // }
-                // int D = fio.nextInt();
-                // int K = fio.nextInt();
-                // int[] F = fio.nextIntArray();
-                // int[] B = fio.nextIntArray();
-                // int k = fio.nextInt();
-                // String s1 = fio.nextLine();
-                // String s2 = fio.nextLine();
-                Solution solution = new Solution();
-                var ans = solution.calculateMinimumSwaps(S, A);
-                io.ln(ans);
+            while (t-- > 0) {
+                tc(io);
             }
         } catch (Exception e) {
             System.err.println("encountered error :: " + e.getMessage());
             e.printStackTrace();
+        }
+
+        if (isLocal) {
+            DiffRunner runner = new DiffRunner();
+            runner.fileDiff(EXP_PATH, OUT_PATH);
         }
     }
 }
