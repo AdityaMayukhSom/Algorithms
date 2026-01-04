@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -10,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.BiFunction;
 
 class DiffRunner {
     private static record DiffSet(String d1, String d2, int count) {
@@ -189,7 +189,7 @@ class FastIO implements AutoCloseable {
         }
     }
 
-    private String readLine() {
+    public String readLine() {
         setupTokenizer();
         return st.nextToken("\n").strip();
     }
@@ -367,6 +367,90 @@ class FastIO implements AutoCloseable {
     }
 }
 
+class SegmentTree {
+    private final int n;
+    private final int[] nums;
+    private final int[] tree;
+
+    private final BiFunction<Integer, Integer, Integer> aggregate;
+    private final int identity;
+
+    public SegmentTree(int[] nums) {
+        this(nums, (a, b) -> a + b, 0);
+    }
+
+    public SegmentTree(int[] nums, BiFunction<Integer, Integer, Integer> aggregate, int identity) {
+        this.n = nums.length;
+        this.nums = nums;
+        this.tree = new int[4 * n];
+        this.aggregate = aggregate;
+        this.identity = identity;
+
+        build(0, 0, n - 1);
+    }
+
+    private void build(int node, int s, int e) {
+        if (s == e) {
+            tree[node] = nums[s];
+        } else {
+            int m = (s + e) / 2;
+            int lc = 2 * node + 1;
+            int rc = 2 * node + 2;
+            build(lc, s, m);
+            build(rc, m + 1, e);
+            tree[node] = aggregate.apply(tree[lc], tree[rc]);
+        }
+    }
+
+    public int query(int l, int r) {
+        return query(0, 0, n - 1, l, r);
+    }
+
+    private int query(int node, int s, int e, int l, int r) {
+        if (e < l || r < s) {
+            return identity;
+        }
+
+        if (l <= s && e <= r) {
+            return tree[node];
+        }
+
+        int m = (s + e) / 2;
+        int lc = 2 * node + 1;
+        int rc = 2 * node + 2;
+        int lans = query(lc, s, m, l, r);
+        int rans = query(rc, m + 1, e, l, r);
+        return aggregate.apply(lans, rans);
+    }
+
+    public void update(int i, int v) {
+        if (i < 0 || i >= n) {
+            final String fmt = "segment tree update index %d out of range for value %d.\n";
+            System.err.printf(fmt, i, v);
+            return;
+        }
+
+        update(0, 0, n - 1, i, v);
+    }
+
+    private void update(int node, int s, int e, int i, int v) {
+        if (s == e) {
+            nums[i] = v;
+            tree[node] = v;
+        } else {
+            int m = (s + e) / 2;
+            int lc = 2 * node + 1;
+            int rc = 2 * node + 2;
+            if (i <= m) {
+                update(lc, s, m, i, v);
+            } else {
+                update(rc, m + 1, e, i, v);
+            }
+            tree[node] = aggregate.apply(tree[lc], tree[rc]);
+        }
+    }
+}
+
 class Commons {
     private static final int MOD = 1000000007;
 
@@ -432,11 +516,37 @@ class Commons {
 }
 
 class Solution extends Commons {
-
     public int solve(int a, int b) {
         return a + b;
     }
 
+    public int findMaxVal(int n, int[][] restrictions, int[] diff) {
+        long[] A = new long[n];
+        Arrays.fill(A, Long.MAX_VALUE);
+
+        for (int[] r : restrictions) {
+            A[r[0]] = r[1];
+        }
+
+        // Setting this after iterating through restrictions because even if
+        // restrictions[i][0] = 0 for some i, the value at A[0] can only be zero
+        A[0] = 0;
+
+        for (int i = 0; i < n - 1; ++i) {
+            A[i + 1] = Math.min(A[i + 1], A[i] + diff[i]);
+        }
+
+        for (int i = n - 2; i >= 0; --i) {
+            A[i] = Math.min(A[i], A[i + 1] + diff[i]);
+        }
+
+        long mx = Long.MIN_VALUE;
+        for (long a : A) {
+            mx = Math.max(a, mx);
+        }
+
+        return (int) mx;
+    }
 }
 
 public class Main {
@@ -446,25 +556,29 @@ public class Main {
     final static String EXP_PATH = "./data/correct.txt";
 
     public static void tc(FastIO io) {
-        int a = io.readInt();
-        int b = io.readInt();
+        // int n = io.readInt();
+        // int r = io.readInt();
+        // int[][] restrictions = io.readPairGraph(r);
+        // int[] diff = io.readIntArray();
 
         // int E = io.readInt();
         // int[][] edges = io.readTrioGraph(E);
-        // int D = fio.nextInt();
-        // int K = fio.nextInt();
-        // int[] F = fio.nextIntArray();
-        // int[] B = fio.nextIntArray();
-        // int k = fio.nextInt();
-        // String s1 = fio.nextLine();
-        // String s2 = fio.nextLine();
-        Solution solution = new Solution();
-        var res = solution.solve(a, b);
-        io.ln(new int[] { res, res + 5 });
+        // int[] F = io.readIntArray();
+        // int[] B = io.readIntArray();
+        // int k = io.readInt();
+        // String s1 = io.readStr();
+        // String s2 = io.readStr();
+
+        // Solution solution = new Solution();
+        // var res = solution.findMaxVal(n, restrictions, diff);
+
+        // io.ln(res);
     }
 
     public static void main(String[] args) {
+        boolean diffEnabled = false;
         boolean isLocal = (null == System.getProperty(ONLINE_JUDGE));
+
         try (FastIO io = isLocal ? new FastIO(IN_PATH, OUT_PATH) : new FastIO()) {
             int t = io.readInt();
 
@@ -476,7 +590,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        if (isLocal) {
+        if (isLocal && diffEnabled) {
             DiffRunner runner = new DiffRunner();
             runner.fileDiff(EXP_PATH, OUT_PATH);
         }
