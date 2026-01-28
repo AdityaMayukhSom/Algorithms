@@ -27,7 +27,7 @@ class DiffRunner {
     private static final char SUB_SIGN = '-';
 
     private void writeLineDiff(long lineNumber, DiffSet ds) {
-        if (ds == null) {
+        if (ds == null || ds.count() == 0) {
             return;
         }
 
@@ -243,6 +243,15 @@ class FastIO implements AutoCloseable {
         return A;
     }
 
+    public int[][] readIntGrid(int m, int n) {
+        int[][] M = new int[m][];
+        for (int i = 0; i < m; ++i) {
+            M[i] = this.readIntArray();
+            assert M[i].length == n;
+        }
+        return M;
+    }
+
     public int[][] readPairGraph(int E) {
         int[][] edges = new int[E][2];
         for (int i = 0; i < E; ++i) {
@@ -454,7 +463,7 @@ class SegmentTree {
 class Commons {
     private static final int MOD = 1000000007;
 
-    boolean isPrime(int n) {
+    boolean isPrime(final int n) {
         if (n <= 1) {
             return false;
         }
@@ -516,36 +525,8 @@ class Commons {
 }
 
 class Solution extends Commons {
-    public int solve(int a, int b) {
-        return a + b;
-    }
-
-    public int findMaxVal(int n, int[][] restrictions, int[] diff) {
-        long[] A = new long[n];
-        Arrays.fill(A, Long.MAX_VALUE);
-
-        for (int[] r : restrictions) {
-            A[r[0]] = r[1];
-        }
-
-        // Setting this after iterating through restrictions because even if
-        // restrictions[i][0] = 0 for some i, the value at A[0] can only be zero
-        A[0] = 0;
-
-        for (int i = 0; i < n - 1; ++i) {
-            A[i + 1] = Math.min(A[i + 1], A[i] + diff[i]);
-        }
-
-        for (int i = n - 2; i >= 0; --i) {
-            A[i] = Math.min(A[i], A[i + 1] + diff[i]);
-        }
-
-        long mx = Long.MIN_VALUE;
-        for (long a : A) {
-            mx = Math.max(a, mx);
-        }
-
-        return (int) mx;
+    public int solve(int[] nums, int n) {
+        return 0;
     }
 }
 
@@ -555,31 +536,19 @@ public class Main {
     final static String OUT_PATH = "./data/output.txt";
     final static String EXP_PATH = "./data/correct.txt";
 
-    public static void tc(FastIO io) {
-        // int n = io.readInt();
-        // int r = io.readInt();
-        // int[][] restrictions = io.readPairGraph(r);
-        // int[] diff = io.readIntArray();
-
-        // int E = io.readInt();
-        // int[][] edges = io.readTrioGraph(E);
-        // int[] F = io.readIntArray();
-        // int[] B = io.readIntArray();
-        // int k = io.readInt();
-        // String s1 = io.readStr();
-        // String s2 = io.readStr();
-
-        // Solution solution = new Solution();
-        // var res = solution.findMaxVal(n, restrictions, diff);
-
-        // io.ln(res);
+    public static void tc(final FastIO io) {
+        final int n = io.readInt();
+        final int[] nums = io.readIntArray();
+        final Solution sol = new Solution();
+        var res = sol.solve(nums, n);
+        io.ln(res);
     }
 
-    public static void main(String[] args) {
-        boolean diffEnabled = false;
-        boolean isLocal = (null == System.getProperty(ONLINE_JUDGE));
+    public static void main(final String[] args) {
+        boolean computeDiff = false;
+        final boolean isLocal = (null == System.getProperty(ONLINE_JUDGE));
 
-        try (FastIO io = isLocal ? new FastIO(IN_PATH, OUT_PATH) : new FastIO()) {
+        try (final FastIO io = isLocal ? new FastIO(IN_PATH, OUT_PATH) : new FastIO()) {
             int t = io.readInt();
 
             while (t-- > 0) {
@@ -590,7 +559,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        if (isLocal && diffEnabled) {
+        if (computeDiff && isLocal) {
             DiffRunner runner = new DiffRunner();
             runner.fileDiff(EXP_PATH, OUT_PATH);
         }
